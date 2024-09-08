@@ -83,7 +83,7 @@ def send_message_to_groups(delay_between_groups):
                 logging.info("Stopping message broadcast.")
                 break
             try:
-                app.send_message(chat_id=group.chat_id, text=message_to_send)
+                app.send_message(username=group.username, text=message_to_send)
                 logging.info(f"Message sent to group '{group.username}'")
                 delay = calculate_random_delay(delay_between_groups)
                 logging.info(f"Delay set to {delay} seconds.")
