@@ -84,12 +84,12 @@ def send_message_to_groups(delay_between_groups):
                 break
             try:
                 app.send_message(chat_id=group.chat_id, text=message_to_send)
-                logging.info(f"Message sent to group '{group.chat_id}'")
+                logging.info(f"Message sent to group '{group.username}'")
                 delay = calculate_random_delay(delay_between_groups)
                 logging.info(f"Delay set to {delay} seconds.")
                 time.sleep(delay)
             except Exception as e:
-                logging.error(f"Error sending message to group '{group.chat_id}': {e}")
+                logging.error(f"Error sending message to group '{group.username}': {e}")
 
 def background_message_sender(delay_between_groups, sending_interval):
     logging.info("Background spam task started.")
