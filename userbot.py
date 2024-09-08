@@ -7,6 +7,7 @@ from pyrogram import Client, filters, idle
 from pyrogram.types import Message
 from dotenv import load_dotenv
 from database import Group, Session
+import random
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +19,8 @@ API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 DEFAULT_DELAY_BETWEEN_GROUPS = int(os.getenv("DELAY_BETWEEN_GROUPS", 5))
 DEFAULT_SENDING_INTERVAL = int(os.getenv("SENDING_INTERVAL", 600))  # Interval between sending messages in seconds
+DELAY_RANDOM_PERCENTAGE = int(os.getenv("DELAY_RANDOM_PERCENTAGE", 0))
+
 
 # Initialize Pyrogram client
 app = Client("userbot", api_id=API_ID, api_hash=API_HASH)
@@ -31,6 +34,14 @@ message_to_send = None
 # Event for controlling spam thread
 stop_event = threading.Event()
 spam_thread = None
+
+def calculate_random_delay(base_delay):
+    """
+    Calcola un ritardo casuale basato su una percentuale massima di incremento.
+    """
+    max_increase = (DELAY_RANDOM_PERCENTAGE / 100) * base_delay
+    random_delay = base_delay + random.uniform(0, max_increase)
+    return random_delay
 
 # Function to add a group to the database
 def add_group(client: Client, message: Message):
@@ -74,7 +85,9 @@ def send_message_to_groups(delay_between_groups):
             try:
                 app.send_message(chat_id=group.chat_id, text=message_to_send)
                 logging.info(f"Message sent to group '{group.chat_id}'")
-                time.sleep(delay_between_groups)
+                delay = calculate_random_delay(delay_between_groups)
+                logging.info(f"Delay set to {delay} seconds.")
+                time.sleep(delay)
             except Exception as e:
                 logging.error(f"Error sending message to group '{group.chat_id}': {e}")
 
@@ -83,7 +96,9 @@ def background_message_sender(delay_between_groups, sending_interval):
     while not stop_event.is_set():
         send_message_to_groups(delay_between_groups)
         if not stop_event.is_set():
-            time.sleep(sending_interval)
+            delay = calculate_random_delay(sending_interval)
+            logging.info(f"Interval set to {delay} seconds.")
+            time.sleep(delay)
 
 def start_spam(client: Client, message: Message):
     global spam_thread
